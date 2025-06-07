@@ -7,6 +7,7 @@ package ffos.skroflin.service;
 import ffos.skroflin.model.Djelatnik;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.dto.DjelatnikDTO;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -53,5 +54,19 @@ public class DjelatnikService extends MainService{
         session.beginTransaction();
         session.remove(session.get(Djelatnik.class, sifra));
         session.getTransaction().commit();
+    }
+    
+    public BigDecimal prosjecnaPlacaOdjela(String nazivOdjela){
+        session.beginTransaction();
+        BigDecimal prosjek = (BigDecimal) session.createQuery(
+                "select avg(d.placa) "
+                        + "from djelatnik d "
+                        + "where d.odjel.nazivOdjela = :nazivOdjela",
+                Djelatnik.class
+                )
+                .setParameter("nazivOdjela", nazivOdjela)
+                .list();
+        session.getTransaction().commit();
+        return prosjek;
     }
 }
