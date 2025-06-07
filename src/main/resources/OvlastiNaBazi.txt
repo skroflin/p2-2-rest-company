@@ -1,1 +1,1 @@
-grant all privileges on p22024.* to 'p2'@'localhost' identified by 'p2'; 
+grant all privileges on p2_k2_02.* to 'p2'@'localhost' identified by 'p2'; 

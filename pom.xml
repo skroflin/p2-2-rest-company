@@ -9,7 +9,7 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>ffos</groupId>
-    <artifactId>P2_kolokvij_predlozak</artifactId>
+    <artifactId>P2_K2_02</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
@@ -70,4 +70,5 @@
         </dependency>
         
     </dependencies>
+    <name>P2_K2_02</name>
 </project>
