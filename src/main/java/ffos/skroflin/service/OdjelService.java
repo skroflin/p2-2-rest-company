@@ -5,6 +5,7 @@
 package ffos.skroflin.service;
 
 import ffos.skroflin.model.Odjel;
+import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.OdjelDTO;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -24,8 +25,12 @@ public class OdjelService extends MainService{
     }
     
     public Odjel post(OdjelDTO o){
-        Odjel odjel = new Odjel(o.naziv(), o.lokacija(), o.tvrtka());
         session.beginTransaction();
+        Tvrtka tvrtka = session.get(Tvrtka.class, o.tvrtkaSifra());
+        Odjel odjel = new Odjel();
+        odjel.setNazivOdjela(o.naziv());
+        odjel.setLokacijaOdjela(o.lokacija());
+        odjel.setTvrtka(tvrtka);
         session.persist(odjel);
         session.getTransaction().commit();
         return odjel;
@@ -34,9 +39,10 @@ public class OdjelService extends MainService{
     public void put(int sifra, OdjelDTO o){
         session.beginTransaction();
         Odjel od = (Odjel) session.get(Odjel.class, sifra);
+        Tvrtka tvrtka = session.get(Tvrtka.class, o.tvrtkaSifra());
         od.setNazivOdjela(o.naziv());
         od.setLokacijaOdjela(o.lokacija());
-        od.setTvrtka(o.tvrtka());
+        od.setTvrtka(tvrtka);
         session.persist(od);
         session.getTransaction().commit();
     }

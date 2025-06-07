@@ -7,7 +7,6 @@ package ffos.skroflin.model.dto;
 import ffos.skroflin.model.Odjel;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.math.BigDecimal;
-import java.util.Date;
 
 /**
  *
@@ -17,8 +16,7 @@ public record DjelatnikDTO(
         @Schema(example = "Sven") String ime,
         @Schema(example = "Kroflin") String prezime,
         @Schema(example = "1500,65") BigDecimal placa,
-        @Schema(example = "07.06.2025.") Date datumAzuriranja,
-        @Schema(example = "1") Odjel odjel
+        @Schema(example = "1") int odjelSifra
         ) {
     
 }

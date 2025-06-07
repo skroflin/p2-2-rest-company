@@ -7,6 +7,8 @@ package ffos.skroflin.model;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -29,6 +31,9 @@ public class Djelatnik extends Osoba{
         this.odjel = odjel;
     }
 
+    public Djelatnik() {
+    }
+
     public BigDecimal getPlaca() {
         return placa;
     }
@@ -43,6 +48,12 @@ public class Djelatnik extends Osoba{
 
     public void setDatumAzuriranja(Date datumAzuriranja) {
         this.datumAzuriranja = datumAzuriranja;
+    }
+    
+    @PrePersist
+    @PreUpdate
+    public void postaviDatumAzuriranja(){
+        this.datumAzuriranja = new Date();
     }
 
     public Odjel getOdjel() {
