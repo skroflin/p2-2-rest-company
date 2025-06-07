@@ -61,12 +61,37 @@ public class DjelatnikService extends MainService{
         BigDecimal prosjek = (BigDecimal) session.createQuery(
                 "select avg(d.placa) "
                         + "from djelatnik d "
-                        + "where d.odjel.nazivOdjela = :nazivOdjela",
-                Djelatnik.class
+                        + "where d.odjel.nazivOdjela = :nazivOdjela", BigDecimal.class
                 )
                 .setParameter("nazivOdjela", nazivOdjela)
-                .list();
+                .uniqueResult();
         session.getTransaction().commit();
         return prosjek;
+    }
+    
+    public List<Object[]> getBrojDjelatnikaPoLokaciji(){
+        session.beginTransaction();
+        List<Object[]> rezultat = session.createQuery(
+            "select d.odjel.lokacijaOdjela, count(d) " +
+            "from djelatnik d " +
+            "group by d.odjel.lokacijaOdjela", Object[].class)
+            .list();
+        session.getTransaction().commit();
+        return rezultat;
+    }
+    
+    public List<Djelatnik> getDjelatniciSaNajvisomPlacom(){
+        BigDecimal maksPlaca = session.createQuery(
+                "select max(d.placa) from djelatnik d", BigDecimal.class)
+                .uniqueResult();
+        
+        if (maksPlaca == null) {
+            return List.of();
+        }
+        
+        return session.createQuery(
+                "from djelatnik d where d.placa = :maksPlaca", Djelatnik.class)
+                .setParameter("maksPlaca", maksPlaca)
+                .list();
     }
 }
