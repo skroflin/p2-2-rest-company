@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -126,6 +127,59 @@ public class OdjelController {
             }
             
             return new ResponseEntity<>(odjelService.post(dto), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Mijenja podatke o odjelu",
+            tags = {"put", "odjel"},
+            description = "Mijenja podatke o odjelu. Naziv i lokacija obavezno!",
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ odjela u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )
+            }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Promjenjeno", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "Loš zahtjev (nije primljena šifra dobra ili dto objekt ili ne postoji naziv ili lokacija odjela)", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @PutMapping("/put")
+    public ResponseEntity<String> put(
+            @RequestParam int sifra,
+            @RequestBody(required = true) OdjelDTO dto
+    ){
+        try {
+            if (dto == null) {
+                return new ResponseEntity<>("Podaci nisu primljeni" + " " + dto, HttpStatus.BAD_REQUEST);
+            }
+            
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            Odjel o = odjelService.getBySifra(sifra);
+            if (o == null) {
+                return new ResponseEntity<>("Ne postoji odjel s navedenom šifrom:" + " " + sifra + " " + "nije promijenjeno!", HttpStatus.BAD_REQUEST);
+            }
+            
+            if (dto.naziv() == null || dto.naziv().isEmpty()) {
+                return new ResponseEntity<>("Naziv odjela obavezno!" +  " " + dto.naziv(), HttpStatus.BAD_REQUEST);
+            }
+            
+            if (dto.lokacija() == null || dto.lokacija().isEmpty()) {
+                return new ResponseEntity<>("Lokacija odjela obavezno!" + " " + dto.lokacija(), HttpStatus.BAD_REQUEST);
+            }
+            
+            odjelService.put(sifra, dto);
+            return new ResponseEntity<>("Promijenjeno", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
