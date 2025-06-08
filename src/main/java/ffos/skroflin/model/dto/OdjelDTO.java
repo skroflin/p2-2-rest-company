@@ -4,7 +4,6 @@
  */
 package ffos.skroflin.model.dto;
 
-import ffos.skroflin.model.Tvrtka;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
