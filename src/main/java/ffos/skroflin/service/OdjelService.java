@@ -4,6 +4,7 @@
  */
 package ffos.skroflin.service;
 
+import ffos.skroflin.model.Djelatnik;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.OdjelDTO;
@@ -51,5 +52,13 @@ public class OdjelService extends MainService{
         session.beginTransaction();
         session.remove(session.get(Odjel.class, sifra));
         session.getTransaction().commit();
+    }
+    
+    public boolean isBrisanje(int sifra){
+        List<Djelatnik> djelatnici = session.createQuery("from djelatnik d join d.odjel_sifra as o where o.sifra=:sifra", Djelatnik.class)
+                .setParameter("sifra", sifra)
+                .list();
+        
+        return djelatnici == null || djelatnici.isEmpty();
     }
 }

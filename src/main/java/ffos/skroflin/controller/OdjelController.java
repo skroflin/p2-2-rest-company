@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -180,6 +181,50 @@ public class OdjelController {
             
             odjelService.put(sifra, dto);
             return new ResponseEntity<>("Promijenjeno", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Briše odjel po šifri",
+            description = "Briše odjel koji nema ni jednog djelatnika. "
+            + "Ukoliko postoji jedan ili više djelatnika na kojima je postavljen zadani odjel vraća poruku o grešci",
+            tags = {"delete", "odjel"},
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ odjela u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "Šifra mora biti veća od nula ili odjel koji se želi brisati ne postoji "
+                + "ili se ne može obrisati jer ima jednog ili više djelatnika postavljeno", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> delete(
+            @RequestParam int sifra
+    ){
+        try {
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            Odjel o = odjelService.getBySifra(sifra);
+            if (o == null) {
+                return new ResponseEntity<>("Ne postoji odjel s navedenom šifrom" + " " + sifra + " " + ", nije moguće obrisati", HttpStatus.BAD_REQUEST);
+            }
+            
+            if (!odjelService.isBrisanje(sifra)) {
+                return new ResponseEntity<>("Odjel se ne može obrisati jer ima jedan ili više djelatnika", HttpStatus.BAD_REQUEST);
+            }
+            
+            odjelService.delete(sifra);
+            return new ResponseEntity<>("Obrisan odjel!", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
