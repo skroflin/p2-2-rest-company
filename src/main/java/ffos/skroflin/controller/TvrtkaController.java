@@ -4,8 +4,10 @@
  */
 package ffos.skroflin.controller;
 
+import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.TvrtkaDTO;
+import ffos.skroflin.service.OdjelService;
 import ffos.skroflin.service.TvrtkaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,8 +17,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -172,7 +176,95 @@ public class TvrtkaController {
             if (dto.lokacija() == null || dto.lokacija().isEmpty()) {
                 return new ResponseEntity<>("Lokacija tvrtke je obavezna" + " " + dto.lokacija(), HttpStatus.BAD_REQUEST);
             }
+            
+            tvrtkaService.put(sifra, dto);
+            return new ResponseEntity<>("Promijenjena tvrtka!", HttpStatus.OK);
         } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Briše tvrtku po šifri",
+            description = "Briše tvrtku u kojoj se ne nalazi niti jednan odjel. "
+            + "Ukoliko postoji jedan ili više odjela unutar jedne tvrtke vraća poruku o grešci!",
+            tags = {"delete", "tvrtka"},
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ tvrtke u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Obrisano", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "Šifra mora biti veća od nula ili student koji se želi brisati ne postoji "
+                + "ili se ne može obrisati jer ima jedan ili više odjela postavljen", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> delete(
+            @RequestParam int sifra
+    ){
+        try {
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule!" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+
+            Tvrtka t = tvrtkaService.getBySifra(sifra);
+            if (t == null) {
+                return new ResponseEntity<>("Ne postoji tvrtka s navedenom šifrom" + " " + sifra + " " + ", nije obrisana!", HttpStatus.BAD_REQUEST);
+            }
+
+            List<Odjel> odjeli = tvrtkaService.getOdjele(sifra);
+            if (odjeli != null && !odjeli.isEmpty()) {
+                return new ResponseEntity<>("Tvrtka se ne može obrisati jer ime jedan ili više odjela!", HttpStatus.BAD_REQUEST);
+            }
+
+            tvrtkaService.delete(sifra);
+            return new ResponseEntity<>("Tvrtka obrisana!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Dohvaća odjele tvrtke po šifri",
+            description = "Dohvaća listu odjela koji se nalazi unutar tvrtke po danoj šifri sa svim podacima. "
+            + "Ukoliko ne postoji odjel za danu šifru vraća prazan odgovor",
+            tags = {"tvrtka", "odjel"},
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ tvrtke u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", content = @Content(mediaType = "application/json", array = @ArraySchema(schema = @Schema(implementation = Odjel.class)))),
+        @ApiResponse(responseCode = "204", description = "Ne postoji tvrtka za danu šifru"),
+        @ApiResponse(responseCode = "400", description = "Šifra mora biti veća od nula", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @GetMapping("/getOdjele")
+    public ResponseEntity getOdjele(
+            @RequestParam int sifra
+    ){
+        try {
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule!" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            Tvrtka t = tvrtkaService.getBySifra(sifra);
+            if (t == null) {
+                return new ResponseEntity<>("Ne postoji tvrtka s navedenom šifrom" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            return new ResponseEntity<>(tvrtkaService.getOdjele(sifra), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 }

@@ -4,6 +4,7 @@
  */
 package ffos.skroflin.service;
 
+import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.TvrtkaDTO;
 import java.util.List;
@@ -21,6 +22,12 @@ public class TvrtkaService extends MainService{
     
     public Tvrtka getBySifra(int sifra){
         return session.get(Tvrtka.class, sifra);
+    }
+    
+    public List<Odjel> getOdjele(int sifra){
+        return session.createQuery("from odjel o join o.tvrtka_sifra as t where t.sifra=:sifra", Odjel.class)
+                .setParameter("sifra", sifra)
+                .list();
     }
     
     public Tvrtka post(TvrtkaDTO o){
