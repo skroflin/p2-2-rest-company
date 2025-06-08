@@ -7,7 +7,6 @@ package ffos.skroflin.controller;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.TvrtkaDTO;
-import ffos.skroflin.service.OdjelService;
 import ffos.skroflin.service.TvrtkaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
