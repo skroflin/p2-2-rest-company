@@ -61,4 +61,14 @@ public class OdjelService extends MainService{
         
         return djelatnici == null || djelatnici.isEmpty();
     }
+    
+    public List<Odjel> getByTvrtka(int sifraTvrtke){
+        session.beginTransaction();
+        List<Odjel> odjeli = session.createQuery(
+                "from odjel o where o.tvrtka.sifra = :sifraTvrtke", Odjel.class)
+                .setParameter("sifraTvrtke", sifraTvrtke)
+                .list();
+        session.getTransaction().commit();
+        return odjeli;
+    }
 }

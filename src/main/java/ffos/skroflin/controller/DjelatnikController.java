@@ -15,6 +15,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.math.BigDecimal;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -224,6 +226,93 @@ public class DjelatnikController {
             
             djelatnikService.delete(sifra);
             return new ResponseEntity<>("Obrisano!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Dohvaća prosječnu plaću za odjel",
+            description = "Vraća prosječnu plaću za djelatnike određenog odjela prema nazivu odjela.",
+            parameters = {
+                @Parameter(
+                        name = "nazivOdjela",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Naziv odjela za koji se izračunava prosječna plaća",
+                        example = "Development"
+                )
+            }
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Prosječna plaća za zadani odjel", content = @Content(schema = @Schema(implementation = BigDecimal.class), mediaType = "application/json")),
+        @ApiResponse(responseCode = "400", description = "Nije unesen naziv odjela ili odjel nema djelatnika", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @GetMapping("/prosjecnaPlacaOdjela")
+    public ResponseEntity<?> prosjecnaPlacaOdjela(
+            @RequestParam String nazivOdjela
+    ){
+        try {
+            if (nazivOdjela == null || nazivOdjela.isEmpty()) {
+                return new ResponseEntity<>("Naziv odjela je obavezan!" + " " + nazivOdjela, HttpStatus.BAD_REQUEST);
+            }
+            
+            BigDecimal prosjecnaPlaca = djelatnikService.prosjecnaPlacaOdjela(nazivOdjela);
+            if (prosjecnaPlaca == null) {
+                return new ResponseEntity<>("Djelatnici nemaju plaću iz navedenog odjela" + " " + nazivOdjela, HttpStatus.BAD_REQUEST);
+            }
+            
+            return new ResponseEntity<>(prosjecnaPlaca, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+  
+    }
+    
+    @Operation(
+            summary = "Dohvaća broj djelatnika po lokaciji",
+            description = "Vraća listu lokacija i broj djelatnika koji rade na svakoj lokaciji. "
+            + "Ako neka lokacija nema djelatnika, neće biti uključena u rezultat."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Popis lokacija i broj djelatnika",
+                content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera",
+                content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @GetMapping("/getBrojDjelatnikaPoLokaciji")
+    public ResponseEntity<?> getBrojDjelatnikaPoLokaciji(){
+        try {
+            List<Object[]> rezultati = djelatnikService.getBrojDjelatnikaPoLokaciji();
+            return new ResponseEntity<>(rezultati, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Dohvaća djelatnike s najvišom plaćom",
+            description = "Vraća sve djelatnike koji imaju najvišu plaću u sustavu. "
+            + "Moguće je da više djelatnika dijeli isti iznos najviše plaće."
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Popis djelatnika s najvišom plaćom",
+                content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "204", description = "Nema djelatnika u sustavu",
+                content = @Content),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera",
+                content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @GetMapping("/getDjelatniciSaNajvisomPlacom")
+    public ResponseEntity<?> getDjelatniciSaNajvisomPlacom(){
+        try {
+            List<Djelatnik> djelatnici = djelatnikService.getDjelatniciSaNajvisomPlacom();
+            if (djelatnici == null || djelatnici.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            
+            return new ResponseEntity<>(djelatnici, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

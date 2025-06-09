@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -222,6 +223,44 @@ public class OdjelController {
             
             odjelService.delete(sifra);
             return new ResponseEntity<>("Obrisan odjel!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Dohvaća sve odjele unutar jedne tvrtke",
+            description = "Vraća sve odjele koji pripadaju tvrtki s navedenom šifrom.",
+            parameters = {
+                @Parameter(
+                        name = "sifraTvrtke",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ tvrtke u bazi podataka",
+                        example = "3"
+                )
+            }
+    )
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Popis odjela unutar tvrtke",
+                content = @Content(mediaType = "application/json")),
+        @ApiResponse(responseCode = "204", description = "Šifra mora biti veća od nula ili nema odjela za zadanu tvrtku",
+                content = @Content),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera",
+                content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @GetMapping("/getByTvrtka")
+    public ResponseEntity<?> getByTvrtka(
+            @RequestParam int sifraTvrtke
+    ){
+        try {
+            List<Odjel> odjeli = odjelService.getByTvrtka(sifraTvrtke);
+            
+            if (odjeli == null || odjeli.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            
+            return new ResponseEntity<>(odjeli, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
