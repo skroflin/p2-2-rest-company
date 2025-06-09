@@ -26,7 +26,7 @@ public class TvrtkaService extends MainService{
     }
     
     public List<Odjel> getOdjele(int sifra){
-        return session.createQuery("from odjel o join o.tvrtka_sifra as t where t.sifra=:sifra", Odjel.class)
+        return session.createQuery("from odjel o where o.tvrtka.sifra =:sifra", Odjel.class)
                 .setParameter("sifra", sifra)
                 .list();
     }
