@@ -4,6 +4,7 @@
  */
 package ffos.skroflin.service;
 
+import com.github.javafaker.Faker;
 import ffos.skroflin.model.Djelatnik;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
@@ -70,5 +71,18 @@ public class OdjelService extends MainService{
                 .list();
         session.getTransaction().commit();
         return odjeli;
+    }
+    
+    public void masovnoDodavanje(int broj){
+        Odjel o;
+        Faker f = new Faker();
+        int maksTvrtkaSifra = 5;
+        for (int i = 0; i < broj; i++) {
+            int sifraTvrtke = f.number().numberBetween(1, maksTvrtkaSifra + 1);
+            Tvrtka t = session.get(Tvrtka.class, sifraTvrtke);
+            o = new Odjel(f.company().profession(), f.address().cityName(), t);
+            session.persist(o);
+        }
+        session.getTransaction().commit();
     }
 }

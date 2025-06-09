@@ -4,6 +4,7 @@
  */
 package ffos.skroflin.service;
 
+import com.github.javafaker.Faker;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.Tvrtka;
 import ffos.skroflin.model.dto.TvrtkaDTO;
@@ -50,6 +51,17 @@ public class TvrtkaService extends MainService{
     public void delete(int sifra){
         session.beginTransaction();
         session.remove(session.get(Tvrtka.class, sifra));
+        session.getTransaction().commit();
+    }
+    
+    public void masovnoDodavanje(int broj){
+        Tvrtka t;
+        Faker f = new Faker();
+        session.beginTransaction();
+        for (int i = 0; i < broj; i++) {
+            t = new Tvrtka(f.company().name(), f.country().capital());
+            session.persist(t);
+        }
         session.getTransaction().commit();
     }
 }
