@@ -4,10 +4,12 @@
  */
 package ffos.skroflin.service;
 
+import com.github.javafaker.Faker;
 import ffos.skroflin.model.Djelatnik;
 import ffos.skroflin.model.Odjel;
 import ffos.skroflin.model.dto.DjelatnikDTO;
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import org.springframework.stereotype.Service;
 
@@ -93,5 +95,25 @@ public class DjelatnikService extends MainService{
                 "from djelatnik d where d.placa = :maksPlaca", Djelatnik.class)
                 .setParameter("maksPlaca", maksPlaca)
                 .list();
+    }
+    
+    public void masovnoDodavanje(int broj){
+        Djelatnik d;
+        Faker f = new Faker();
+        int maksOdjelaSifra = 5;
+        BigDecimal placa = BigDecimal.valueOf(f.number().randomDouble(2, 1200, 1800));
+        Date datumAzuriranja = new Date();
+        for (int i = 0; i < broj; i++) {
+            int sifraOdjela = f.number().numberBetween(1, maksOdjelaSifra);
+            Odjel o = session.get(Odjel.class, sifraOdjela);
+            d = new Djelatnik();
+            d.setIme(f.name().firstName());
+            d.setPrezime(f.name().lastName());
+            d.setPlaca(placa);
+            d.setDatumAzuriranja(datumAzuriranja);
+            d.setOdjel(o);
+            session.persist(o);
+        }
+        session.getTransaction().commit();
     }
 }

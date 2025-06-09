@@ -77,10 +77,11 @@ public class OdjelService extends MainService{
         Odjel o;
         Faker f = new Faker();
         int maksTvrtkaSifra = 5;
+        session.beginTransaction();
         for (int i = 0; i < broj; i++) {
             int sifraTvrtke = f.number().numberBetween(1, maksTvrtkaSifra + 1);
             Tvrtka t = session.get(Tvrtka.class, sifraTvrtke);
-            o = new Odjel(f.company().profession(), f.address().cityName(), t);
+            o = new Odjel(f.company().industry(), f.address().cityName() + " " + f.address().countryCode(), t);
             session.persist(o);
         }
         session.getTransaction().commit();
