@@ -103,6 +103,7 @@ public class DjelatnikService extends MainService{
         int maksOdjelaSifra = 5;
         BigDecimal placa = BigDecimal.valueOf(f.number().randomDouble(2, 1200, 1800));
         Date datumAzuriranja = new Date();
+        session.beginTransaction();
         for (int i = 0; i < broj; i++) {
             int sifraOdjela = f.number().numberBetween(1, maksOdjelaSifra);
             Odjel o = session.get(Odjel.class, sifraOdjela);
@@ -112,7 +113,7 @@ public class DjelatnikService extends MainService{
             d.setPlaca(placa);
             d.setDatumAzuriranja(datumAzuriranja);
             d.setOdjel(o);
-            session.persist(o);
+            session.persist(d);
         }
         session.getTransaction().commit();
     }
