@@ -17,8 +17,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -127,6 +129,101 @@ public class DjelatnikController {
             }
             
             return new ResponseEntity<>(djelatnikService.post(dto), HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Mijenja djelatnika",
+            tags = {"put", "djelatnika"},
+            description = "Mijenja podatke djelatnika. Ime, prezime i plaća djelatnika je obavezno!",
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ djelatnika u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )
+            }
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Promjenjeno", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "Loš zahtjev (nije primljena šifra dobra ili dto objekt ili ne postoji ime, prezime ili plaća.)", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @PutMapping("/put")
+    public ResponseEntity<String> put(
+            @RequestParam int sifra,
+            @RequestBody (required = true) DjelatnikDTO dto
+    ){
+        try {
+            if (dto == null) {
+                return new ResponseEntity<>("Podaci nisu primljeni" + " " + dto, HttpStatus.BAD_REQUEST);
+            }
+            
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            Djelatnik d = djelatnikService.getBySifra(sifra);
+            if (d == null) {
+                return new ResponseEntity<>("Ne postoji djelatnik s navedenom šifrom" +  " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            if (dto.ime() == null || dto.ime().isEmpty()) {
+                return new ResponseEntity<>("Ime djelatnika obavezno" + " " + dto.ime(), HttpStatus.BAD_REQUEST);
+            }
+            
+            if (dto.prezime() == null || dto.prezime().isEmpty()) {
+                return new ResponseEntity<>("Prezime djelatnika obavezno" + " " + dto.prezime(), HttpStatus.BAD_REQUEST);
+            }
+            
+            if (dto.placa() == null) {
+                return new ResponseEntity<>("Plaća djelatnika obavezno" + " " + dto.placa(), HttpStatus.BAD_REQUEST);
+            }
+            
+            djelatnikService.put(sifra, dto);
+            return new ResponseEntity<>("Promijenjeno!", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    
+    @Operation(
+            summary = "Briše djelatnika po šifri",
+            description = "Briše djelatnika i sve njegove pripadajuće podatke sa sobom. ",
+            tags = {"delete", "djelatnik"},
+            parameters = {
+                @Parameter(
+                        name = "sifra",
+                        allowEmptyValue = false,
+                        required = true,
+                        description = "Primarni ključ djelatnika u bazi podataka, mora biti veći od nula",
+                        example = "2"
+                )})
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Obrisano", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "400", description = "Šifra mora biti veća od nula ili djelatnik koji se želi brisati ne postoji ", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html")),
+        @ApiResponse(responseCode = "500", description = "Interna pogreška servera", content = @Content(schema = @Schema(implementation = String.class), mediaType = "text/html"))
+    })
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> delete(
+            @RequestParam int sifra
+    ){
+        try {
+            if (sifra <= 0) {
+                return new ResponseEntity<>("Šifra mora biti veća od nule" + " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            Djelatnik d = djelatnikService.getBySifra(sifra);
+            if (d == null) {
+                return new ResponseEntity<>("Ne postoji djelatnik s navedenom šifrom" +  " " + sifra, HttpStatus.BAD_REQUEST);
+            }
+            
+            djelatnikService.delete(sifra);
+            return new ResponseEntity<>("Obrisano!", HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
