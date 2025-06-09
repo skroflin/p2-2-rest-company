@@ -58,12 +58,12 @@ public class DjelatnikService extends MainService{
         session.getTransaction().commit();
     }
     
-    public BigDecimal prosjecnaPlacaOdjela(String nazivOdjela){
+    public Double prosjecnaPlacaOdjela(String nazivOdjela){
         session.beginTransaction();
-        BigDecimal prosjek = (BigDecimal) session.createQuery(
+        Double prosjek = session.createQuery(
                 "select avg(d.placa) "
                         + "from djelatnik d "
-                        + "where d.odjel.nazivOdjela = :nazivOdjela", BigDecimal.class
+                        + "where d.odjel.nazivOdjela = :nazivOdjela", Double.class
                 )
                 .setParameter("nazivOdjela", nazivOdjela)
                 .uniqueResult();

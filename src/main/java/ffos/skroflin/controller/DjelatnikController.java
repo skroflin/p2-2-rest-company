@@ -258,7 +258,7 @@ public class DjelatnikController {
                 return new ResponseEntity<>("Naziv odjela je obavezan!" + " " + nazivOdjela, HttpStatus.BAD_REQUEST);
             }
             
-            BigDecimal prosjecnaPlaca = djelatnikService.prosjecnaPlacaOdjela(nazivOdjela);
+            Double prosjecnaPlaca = djelatnikService.prosjecnaPlacaOdjela(nazivOdjela);
             if (prosjecnaPlaca == null) {
                 return new ResponseEntity<>("Djelatnici nemaju plaću iz navedenog odjela" + " " + nazivOdjela, HttpStatus.BAD_REQUEST);
             }
