@@ -37,15 +37,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/skroflin/odjel")
 public class OdjelController {
     private final OdjelService odjelService;
-    private final TvrtkaService tvrtkaService;
 
-    public OdjelController(OdjelService odjelService, TvrtkaService tvrtkaService) {
+    public OdjelController(OdjelService odjelService) {
         this.odjelService = odjelService;
-        this.tvrtkaService = tvrtkaService;
     }
     
     @Operation(
-            summary = "Dohvaća sve odjele", tags = {"get", "odječ"},
+            summary = "Dohvaća sve odjele", tags = {"get", "odjel"},
             description = "Dohvaća sve odjele sa svim podacima"
     )
     @ApiResponses(
