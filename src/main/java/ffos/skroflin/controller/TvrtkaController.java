@@ -93,7 +93,7 @@ public class TvrtkaController {
                 return new ResponseEntity<>("Tvrtka s navedenom šifrom:" + " " + sifra + " " + "ne postoji", HttpStatus.NO_CONTENT);
             }
             
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(tvrtka, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

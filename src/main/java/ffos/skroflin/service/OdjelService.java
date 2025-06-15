@@ -56,7 +56,7 @@ public class OdjelService extends MainService{
     }
     
     public boolean isBrisanje(int sifra){
-        List<Djelatnik> djelatnici = session.createQuery("from djelatnik d join d.odjel_sifra as o where o.sifra=:sifra", Djelatnik.class)
+        List<Djelatnik> djelatnici = session.createQuery("from djelatnik d join d.odjel_sifra = :sifra", Djelatnik.class)
                 .setParameter("sifra", sifra)
                 .list();
         
